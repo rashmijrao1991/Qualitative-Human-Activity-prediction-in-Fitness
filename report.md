@@ -222,16 +222,16 @@ With the test data, accuracy obtained is 0.9997.
     pred2 <- predict(rf, newdata=trainset)
     confusionMatrix(pred2,trainset$classe)
     
-    Confusion Matrix and Statistics
+       # Confusion Matrix and Statistics
 
-             # Reference
-   # Prediction    A    B    C    D    E
-            # A 3906    0    0    0    0
-            # B    0 2658    0    0    0
-            # C    0    0 2396    0    0
-            # D    0    0    0 2252    0
-            # E    0    0    0    0 2525
-    
+                 # Reference
+       # Prediction    A    B    C    D    E
+                # A 3906    0    0    0    0
+                # B    0 2658    0    0    0
+                # C    0    0 2396    0    0
+                # D    0    0    0 2252    0
+                # E    0    0    0    0 2525
+        
   # Overall Statistics
                                          
                   # Accuracy : 1          
@@ -259,9 +259,8 @@ With the test data, accuracy obtained is 0.9997.
     confusionMatrix(predict2,testset$classe)
     
     # Confusion Matrix and Statistics
-
-             # Reference
-   # Prediction    A    B    C    D    E
+            # Reference
+    # Prediction    A    B    C    D    E
             # A 1671    5    0    0    0
             # B    2 1133    5    0    0
             # C    1    1 1020   11    1
@@ -271,12 +270,11 @@ With the test data, accuracy obtained is 0.9997.
     # Overall Statistics
                                                                                     
               # Accuracy : 0.9952          
-                # 95% CI : (0.9931, 0.9968)
-   # No Information Rate : 0.2845          
-   # P-Value [Acc > NIR] : < 2.2e-16       
-                                          
-                 # Kappa : 0.994           
-                 # Mcnemar's Test P-Value : NA              
+              # 95% CI : (0.9931, 0.9968)
+              # No Information Rate : 0.2845          
+              # P-Value [Acc > NIR] : < 2.2e-16       
+              # Kappa : 0.994           
+              # Mcnemar's Test P-Value : NA              
 
     # Statistics by Class:
 
@@ -298,7 +296,7 @@ As the Random Forest model gave us the best result, use the Random Forest model 
     finres<-predict(rf,pretest)
     finres
     # The classes predicted for the 20 test cases was 
-    # 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
+    #  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
     #  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 
     # Writing the results to file
