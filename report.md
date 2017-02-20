@@ -238,19 +238,19 @@ With the test data, accuracy obtained is 0.9997.
        # P-Value [Acc > NIR] : < 2.2e-16  
                                          
                      # Kappa : 1          
-    # Mcnemar's Test P-Value : NA         
+                     # Mcnemar's Test P-Value : NA         
 
    # Statistics by Class:
 
-                        # Class: A Class: B Class: C Class: D Class: E
-   # Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
-   # Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
-   # Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
-   # Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
-   # Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
-   # Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1838
-   # Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
-   # Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000
+                       # Class: A Class: B Class: C Class: D Class: E
+                       # Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+                       # Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+                       # Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+                       # Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+                       # Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
+                       # Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1838
+                       # Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
+                       # Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000
 
     # Results using validation test set
     predict2 <- predict(rf, newdata=testset)
@@ -276,19 +276,19 @@ With the test data, accuracy obtained is 0.9997.
    # P-Value [Acc > NIR] : < 2.2e-16       
                                           
                  # Kappa : 0.994           
-# Mcnemar's Test P-Value : NA              
+                 # Mcnemar's Test P-Value : NA              
 
     # Statistics by Class:
 
-                        # Class: A Class: B Class: C Class: D Class: E
-   # Sensitivity            0.9982   0.9947   0.9942   0.9876   0.9991
-   # Specificity            0.9988   0.9985   0.9971   0.9998   0.9998
-   # Pos Pred Value         0.9970   0.9939   0.9865   0.9990   0.9991
-   # Neg Pred Value         0.9993   0.9987   0.9988   0.9976   0.9998
-   # Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
-   # Detection Rate         0.2839   0.1925   0.1733   0.1618   0.1837
-   # Detection Prevalence   0.2848   0.1937   0.1757   0.1619   0.1839
-   # Balanced Accuracy      0.9985   0.9966   0.9956   0.9937   0.9994
+                       # Class: A Class: B Class: C Class: D Class: E
+                       # Sensitivity            0.9982   0.9947   0.9942   0.9876   0.9991
+                       # Specificity            0.9988   0.9985   0.9971   0.9998   0.9998
+                       # Pos Pred Value         0.9970   0.9939   0.9865   0.9990   0.9991
+                       # Neg Pred Value         0.9993   0.9987   0.9988   0.9976   0.9998
+                       # Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+                       # Detection Rate         0.2839   0.1925   0.1733   0.1618   0.1837
+                       # Detection Prevalence   0.2848   0.1937   0.1757   0.1619   0.1839
+                       # Balanced Accuracy      0.9985   0.9966   0.9956   0.9937   0.9994
 
 
 ### Conclusion
