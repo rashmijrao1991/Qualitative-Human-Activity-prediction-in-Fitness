@@ -1,0 +1,247 @@
+<h1 id="qualitative-human-activity-prediction-in-fitness">Qualitative Human Activity prediction in Fitness</h1>
+<h2 id="overview">Overview</h2>
+<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.</p>
+<p>In this project, data used is from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways:</p>
+<ul>
+<li>Class A: exactly according to the specification</li>
+<li>Class B: throwing the elbows to the front</li>
+<li>Class C: lifting the dumbbell only halfway</li>
+<li>Class D: lowering the dumbbell only halfway</li>
+<li>Class E: throwing the hips to the front</li>
+</ul>
+<p>Refer to http://groupware.les.inf.puc-rio.br/har for more details.</p>
+<h2 id="goal">Goal</h2>
+<p>This project is a part of the Coursera Practical Machine Learning course. The goal is to predict the manner in which people did the exercise. This is the &quot;classe&quot; variable in the training set.</p>
+<h2 id="report">Report</h2>
+<p>This report includes: + Cleaning the data for preprossing; + Preprocessing the data; + Different models for prediction; + Results of prediction model predicting 20 different test cases.</p>
+<h3 id="libraries-used">Libraries used</h3>
+<p>Below are the various R packages that were used.</p>
+<pre><code># libraries
+library(caret)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(ggplot2)
+library(lattice)
+library(rattle)</code></pre>
+<h3 id="importing-the-data">Importing the data</h3>
+<p>Load the training and test data sets from the URLs. na.strings: a character vector of strings which are to be interpreted as NA values</p>
+<pre><code>trainUrl &lt;- &quot;http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;
+testUrl &lt;- &quot;http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
+traindata &lt;- read.csv(url(trainUrl), header=TRUE, sep=&quot;,&quot;, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))
+testdata &lt;- read.csv(url(testUrl), header=TRUE, sep=&quot;,&quot;, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))</code></pre>
+<h3 id="preparing-data-for-preprocessing">Preparing data for preprocessing</h3>
+<p>We need to inspect and clean the data for further processing.</p>
+<p><strong>Inspecting the different features of the data</strong></p>
+<pre><code>dim(traindata)
+summary(traindata)
+dim(testdata)
+summary(testdata)</code></pre>
+<p>It can be noticed that some columns don't contain usefull data and there are many columns with missing data. Some variables, like stddev_, avg_ seem to be derived from the original data. Although the number of columns of both training and test data is equal, the last column of the test set is different (problem_id) from the last column of the training data (classe). We need to make sure to apply the same transformations on both the training and test data.</p>
+<p><strong>Removing columns with not much useful information</strong></p>
+<pre><code># eliminating first 7 columns like userid and timestamps as they are not useful to predict the class of the activity  
+traindata &lt;- traindata[,-seq(1:7)]
+testdata &lt;- testdata[,-seq(1:7)]</code></pre>
+<p><strong>Removing columns with NAs</strong></p>
+<p>This reduces the number of features</p>
+<pre><code># selecting the columns that don&#39;t have NAs
+iNA &lt;- as.vector(sapply(traindata[,1:152],function(x) {length(which(is.na(x)))!=0}))
+traindata &lt;- traindata[,!iNA]
+testdata &lt;- testdata[,!iNA]</code></pre>
+<p><strong>Reducing the number of variables by removing the highly correlated variables</strong></p>
+<p>There can be highly correlated variables which could reduce the performance of a model. Hence they'll need to be excluded.</p>
+<pre><code># last column is the column of interest. Get the index of the last column.
+len &lt;- as.numeric(ncol(traindata))
+
+# setting the variables to numerics to check for correlation (except the last variable)
+for (i in 1:len-1) {
+traindata[,i] &lt;- as.numeric(traindata[,i])
+testdata[,i] &lt;- as.numeric(testdata[,i])
+}
+
+# Checking the correlations and doing levelplot 
+check &lt;- cor(traindata[, -c(len)])
+diag(check) &lt;- 0 
+plot( levelplot(check, 
+                main =&quot;Correlation matrix&quot;,
+                scales=list(x=list(rot=90), cex=1.0),))
+                </code></pre>
+<div class="figure">
+<img src="/Corrmat.png" alt="Correlation Matrix" /><p class="caption">Correlation Matrix</p>
+</div>
+<pre><code># Extracting only the highly correlated variables with a cutoff of 90%
+highcorr &lt;- findCorrelation(cor(traindata[, -c(len)]), cutoff=0.9)
+
+# Removing the highly correlated variables from both training and test data
+traindata &lt;- traindata[, -highcorr]
+testdata &lt;- testdata[, -highcorr]</code></pre>
+<p><strong>Preproccesing of the variables</strong></p>
+<p>The number of variables has been reduced to 46. We still need to preprocess the data. The knnImpute method uses the most similar (nearest) neighbors to impute the missing values using the average value of its neighbors for that column. Hence knnImpute method is used to impute the missing values in the data along with centering and scaling. Centering is done by subtracting the column means (omitting NAs) of x from their corresponding columns. Scaling is done by dividing the (centered) columns of x by their standard deviations.</p>
+<pre><code># Preprocessing and getting the prediction.
+pretrain &lt;-preProcess(traindata[,1:len-1],method=c(&#39;knnImpute&#39;, &#39;center&#39;, &#39;scale&#39;))
+trainPred &lt;- predict(pretrain, traindata[,1:len-1])
+trainPred$classe &lt;- traindata$classe
+
+pretest &lt;-predict(pretrain,testdata[,1:len-1])
+pretest$problem_id &lt;- testdata$problem_id</code></pre>
+<p><strong>Checking and removing the variables whose variance are close to zero</strong></p>
+<p>Variables with nearly zero variance have less prediction value, so we need to remove them. In this case, there are no such variables</p>
+<pre><code># checking for near zero variance
+trainNZV &lt;- nearZeroVar(trainPred, saveMetrics=TRUE)
+if (any(trainNZV$nzv)) nzv else message(&quot;No such variables&quot;)
+trainPred &lt;- trainPred[,trainNZV$nzv==FALSE]
+pretest &lt;- pretest[,trainNZV$nzv==FALSE]</code></pre>
+<h3 id="cross-validation">Cross validation</h3>
+<p>To train and test the model, we need to create sets for training and a testing from the complete training data.</p>
+<pre><code># split dataset into training and test set
+trainidx &lt;- createDataPartition(y=trainPred$classe, p=0.7, list=FALSE )
+trainset &lt;- trainPred[trainidx,]
+testset &lt;- trainPred[-trainidx,]</code></pre>
+<h3 id="model-1-decision-tree">Model 1: Decision Tree</h3>
+<p>Starting with a simple Decision Tree for classification.</p>
+<pre><code># Set a seed for reproducability.
+set.seed(12345)
+
+# Decision Tree using rpart
+decisionTree &lt;- rpart(classe ~ ., data=trainset, method=&quot;class&quot;)
+
+# Visualizing the decisionTree using fancyRpartPlot
+fancyRpartPlot(decisionTree)</code></pre>
+<div class="figure">
+<img src="/decisionTree.png" alt="Decision Tree Plot" /><p class="caption">Decision Tree Plot</p>
+</div>
+<h3 id="accuracy-of-model-1-on-training-set-and-cross-validation-set">Accuracy of Model 1 on training set and cross validation set</h3>
+<p>Accuracy obtained is 0.7206</p>
+<pre><code># cross validation
+pred1 &lt;- predict(dt, testset, type = &quot;class&quot;)
+confusionMatrix(pred1, testset$classe)
+
+# Confusion Matrix and Statistics
+         # Reference
+# Prediction    A    B    C    D    E
+        # A 1513  227   30  106   77
+        # B   61  623  146   49  124
+        # C   39  142  743   72  135
+        # D   51  112   91  681   65
+        # E   10   35   16   56  681</code></pre>
+<p># Overall Statistics</p>
+<pre><code>              # Accuracy : 0.7206         
+              # 95% CI : (0.709, 0.7321)
+              # No Information Rate : 0.2845         
+              # P-Value [Acc &gt; NIR] : &lt; 2.2e-16      
+              # Kappa : 0.6447         
+              # Mcnemar&#39;s Test P-Value : &lt; 2.2e-16      </code></pre>
+<p># Statistics by Class:</p>
+<pre><code>                                # Class: A Class: B Class: C Class: D Class: E
+           # Sensitivity            0.9038   0.5470   0.7242   0.7064   0.6294
+           # Specificity            0.8955   0.9199   0.9201   0.9352   0.9756
+           # Pos Pred Value         0.7747   0.6211   0.6569   0.6810   0.8534
+           # Neg Pred Value         0.9591   0.8943   0.9405   0.9421   0.9212
+           # Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+           # Detection Rate         0.2571   0.1059   0.1263   0.1157   0.1157
+           # Detection Prevalence   0.3319   0.1704   0.1922   0.1699   0.1356
+           # Balanced Accuracy      0.8997   0.7335   0.8222   0.8208   0.8025</code></pre>
+<h3 id="model-2-random-forest">Model 2: Random Forest</h3>
+<p>Tree Ensembles could provide better accuracy than simple decision tree. Hence using the tuneRF function to calculate the optimal mtry and use that in a random forest function.</p>
+<pre><code># Getting the best mtry
+bestmtry &lt;- tuneRF(trainset[-len],trainset$classe, ntreeTry=100, 
+                   stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE, dobest=FALSE)
+
+mtry &lt;- bestmtry[as.numeric(which.min(bestmtry[,&quot;OOBError&quot;])),&quot;mtry&quot;]
+
+# Random Forest model
+rf &lt;-randomForest(classe~.,data=trainset, mtry=mtry, ntree=501, 
+                      keep.forest=TRUE, proximity=TRUE, 
+                      importance=TRUE,test=trainset)</code></pre>
+<h3 id="results-of-model-2">Results of Model 2</h3>
+<p>Looking at the mean decrease in both accuracy and Gini score,to use 501 trees. # Plotting the accuracy and Gini varImpPlot(rf, main=&quot;Mean Decrease in Accuracy and Gini for each variable&quot;)</p>
+<div class="figure">
+<img src="/AccNGini.png" alt="Accuracy and Gini scores" /><p class="caption">Accuracy and Gini scores</p>
+</div>
+<h3 id="accuracy-of-model-2-on-training-set-and-cross-validation-set">Accuracy of Model 2 on training set and cross validation set</h3>
+<p>With the test data, accuracy obtained is 0.9997.</p>
+<pre><code># results with training set
+pred2 &lt;- predict(rf, newdata=trainset)
+confusionMatrix(pred2,trainset$classe)
+
+   # Confusion Matrix and Statistics
+
+             # Reference
+   # Prediction    A    B    C    D    E
+            # A 3906    0    0    0    0
+            # B    0 2658    0    0    0
+            # C    0    0 2396    0    0
+            # D    0    0    0 2252    0
+            # E    0    0    0    0 2525
+    </code></pre>
+<p># Overall Statistics</p>
+<pre><code>              # Accuracy : 1          
+              # 95% CI : (0.9997, 1)
+              # No Information Rate : 0.2843     
+              # P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
+                                     
+              # Kappa : 1          
+              # Mcnemar&#39;s Test P-Value : NA         </code></pre>
+<p># Statistics by Class:</p>
+<pre><code>                   # Class: A Class: B Class: C Class: D Class: E
+                   # Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+                   # Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+                   # Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+                   # Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+                   # Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
+                   # Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1838
+                   # Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
+                   # Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000
+
+# Results using validation test set
+predict2 &lt;- predict(rf, newdata=testset)
+confusionMatrix(predict2,testset$classe)
+
+# Confusion Matrix and Statistics
+        # Reference
+# Prediction    A    B    C    D    E
+        # A 1671    5    0    0    0
+        # B    2 1133    5    0    0
+        # C    1    1 1020   11    1
+        # D    0    0    1  952    0
+        # E    0    0    0    1 1081
+
+# Overall Statistics
+                                                                                
+          # Accuracy : 0.9952          
+          # 95% CI : (0.9931, 0.9968)
+          # No Information Rate : 0.2845          
+          # P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+          # Kappa : 0.994           
+          # Mcnemar&#39;s Test P-Value : NA              
+
+# Statistics by Class:
+
+                   # Class: A Class: B Class: C Class: D Class: E
+                   # Sensitivity            0.9982   0.9947   0.9942   0.9876   0.9991
+                   # Specificity            0.9988   0.9985   0.9971   0.9998   0.9998
+                   # Pos Pred Value         0.9970   0.9939   0.9865   0.9990   0.9991
+                   # Neg Pred Value         0.9993   0.9987   0.9988   0.9976   0.9998
+                   # Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+                   # Detection Rate         0.2839   0.1925   0.1733   0.1618   0.1837
+                   # Detection Prevalence   0.2848   0.1937   0.1757   0.1619   0.1839
+                   # Balanced Accuracy      0.9985   0.9966   0.9956   0.9937   0.9994</code></pre>
+<h3 id="conclusion">Conclusion</h3>
+<p>As the Random Forest model gave us the best result, use the Random Forest model on the validation test set to get the final results.</p>
+<pre><code># Predicting the class of the validation test set
+finres&lt;-predict(rf,pretest)
+finres
+# The classes predicted for the 20 test cases was 
+#  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
+#  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
+
+# Writing the results to file
+pml_write_files = function(x){
+    n = length(x)
+    for(i in 1:n){
+        filename = paste0(&quot;problem_id_&quot;,i,&quot;.txt&quot;)
+        write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    }
+}
+
+pml_write_files(finres)</code></pre>
