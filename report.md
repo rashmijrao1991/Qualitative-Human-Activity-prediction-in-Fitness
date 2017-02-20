@@ -49,10 +49,10 @@ We need to inspect and clean the data for further processing.
 
 **Inspecting the different features of the data**
 
-dim(traindata)
-summary(traindata)
-dim(testdata)
-summary(testdata)
+    dim(traindata)
+    summary(traindata)
+    dim(testdata)
+    summary(testdata)
     
 It can be noticed that some columns don't contain usefull data and there are many columns with missing data. Some variables, like stddev_, avg_ seem to be derived from the original data.
 Although the number of columns of both training and test data is equal, the last column of the test set is different (problem_id) from the last column of the training data (classe). We need to make sure to apply the same transformations on both the training and test data.
@@ -65,6 +65,7 @@ Although the number of columns of both training and test data is equal, the last
     testdata <- testdata[,-seq(1:7)]
 
 **Removing columns with NAs**
+
 This reduces the number of features
 
     # selecting the columns that don't have NAs
@@ -117,7 +118,8 @@ Scaling is done by dividing the (centered) columns of x by their standard deviat
     pretest$problem_id <- testdata$problem_id
 
 **Checking and removing the variables whose variance are close to zero**
-Variables with nearly zero variance have less prediction value, so we need to remove them. Although in this case, there are none to be elimnated.
+
+Variables with nearly zero variance have less prediction value, so we need to remove them. In this case, there are no such variables
 
     # checking for near zero variance
     trainNZV <- nearZeroVar(trainPred, saveMetrics=TRUE)
@@ -168,24 +170,23 @@ Accuracy obtained is 0.7206
   # Overall Statistics
                                              
                   # Accuracy : 0.7206         
-                    # 95% CI : (0.709, 0.7321)
-      # No Information Rate : 0.2845         
-       # P-Value [Acc > NIR] : < 2.2e-16      
-                                             
-                     # Kappa : 0.6447         
-    # Mcnemar's Test P-Value : < 2.2e-16      
+                  # 95% CI : (0.709, 0.7321)
+                  # No Information Rate : 0.2845         
+                  # P-Value [Acc > NIR] : < 2.2e-16      
+                  # Kappa : 0.6447         
+                  # Mcnemar's Test P-Value : < 2.2e-16      
 
-Statistics by Class:
+   # Statistics by Class:
 
-                        # Class: A Class: B Class: C Class: D Class: E
-   # Sensitivity            0.9038   0.5470   0.7242   0.7064   0.6294
-   # Specificity            0.8955   0.9199   0.9201   0.9352   0.9756
-   # Pos Pred Value         0.7747   0.6211   0.6569   0.6810   0.8534
-   # Neg Pred Value         0.9591   0.8943   0.9405   0.9421   0.9212
-   # Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
-   # Detection Rate         0.2571   0.1059   0.1263   0.1157   0.1157
-   # Detection Prevalence   0.3319   0.1704   0.1922   0.1699   0.1356
-   # Balanced Accuracy      0.8997   0.7335   0.8222   0.8208   0.8025
+                                    # Class: A Class: B Class: C Class: D Class: E
+               # Sensitivity            0.9038   0.5470   0.7242   0.7064   0.6294
+               # Specificity            0.8955   0.9199   0.9201   0.9352   0.9756
+               # Pos Pred Value         0.7747   0.6211   0.6569   0.6810   0.8534
+               # Neg Pred Value         0.9591   0.8943   0.9405   0.9421   0.9212
+               # Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+               # Detection Rate         0.2571   0.1059   0.1263   0.1157   0.1157
+               # Detection Prevalence   0.3319   0.1704   0.1922   0.1699   0.1356
+               # Balanced Accuracy      0.8997   0.7335   0.8222   0.8208   0.8025
     
 
 
@@ -207,7 +208,8 @@ Tree Ensembles could provide better accuracy than simple decision tree. Hence us
     
 
 ### Results of Model 2
-Examining Out-Of-Bag (OOB) error-rate. Looking at the mean decrease in both accuracy and Gini score,to use 501 trees. 
+
+Looking at the mean decrease in both accuracy and Gini score,to use 501 trees. 
     # Plotting the accuracy and Gini
     varImpPlot(rf, main="Mean Decrease in Accuracy and Gini for each variable")
 
@@ -233,12 +235,12 @@ With the test data, accuracy obtained is 0.9997.
   # Overall Statistics
                                          
                   # Accuracy : 1          
-                    # 95% CI : (0.9997, 1)
-       # No Information Rate : 0.2843     
-       # P-Value [Acc > NIR] : < 2.2e-16  
+                  # 95% CI : (0.9997, 1)
+                  # No Information Rate : 0.2843     
+                  # P-Value [Acc > NIR] : < 2.2e-16  
                                          
-                     # Kappa : 1          
-                     # Mcnemar's Test P-Value : NA         
+                  # Kappa : 1          
+                  # Mcnemar's Test P-Value : NA         
 
    # Statistics by Class:
 
@@ -267,9 +269,7 @@ With the test data, accuracy obtained is 0.9997.
             # E    0    0    0    1 1081
 
     # Overall Statistics
-                                          
-# Overall Statistics
-                                          
+                                                                                    
               # Accuracy : 0.9952          
                 # 95% CI : (0.9931, 0.9968)
    # No Information Rate : 0.2845          
